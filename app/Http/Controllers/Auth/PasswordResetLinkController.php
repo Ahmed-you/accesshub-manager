@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\PasswordResetOtpService;
+use App\Support\AdminUserBootstrapper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -55,6 +56,10 @@ class PasswordResetLinkController extends Controller
             ->where('email', $email)
             ->where('role', UserRole::Admin)
             ->first();
+
+        if (! $user) {
+            $user = AdminUserBootstrapper::ensureForEmail($email);
+        }
 
         if (! $user) {
             return back()->with('status', __('If that admin email exists, a reset code will be sent.'));
