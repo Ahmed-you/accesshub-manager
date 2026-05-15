@@ -14,13 +14,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->updateOrCreate([
-            'username' => env('ADMIN_USERNAME', 'admin'),
-        ], [
+        $email = env('ADMIN_EMAIL', 'admin@example.com');
+        $username = env('ADMIN_USERNAME', 'admin');
+        $password = env('ADMIN_PASSWORD', 'password');
+
+        $user = User::query()
+            ->where('email', $email)
+            ->orWhere('username', $username)
+            ->first();
+
+        $values = [
+            'username' => $username,
             'name' => env('ADMIN_NAME', 'AccessHub Admin'),
-            'email' => env('ADMIN_EMAIL', 'admin@example.com'),
-            'password' => env('ADMIN_PASSWORD', 'password'),
+            'email' => $email,
+            'email_verified_at' => now(),
             'role' => UserRole::Admin,
-        ]);
+        ];
+
+        if (! $user) {
+            $values['password'] = $password;
+        }
+
+        User::query()->updateOrCreate([
+            'email' => $email,
+        ], $values);
     }
 }
