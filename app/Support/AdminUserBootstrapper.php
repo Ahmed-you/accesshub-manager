@@ -23,10 +23,10 @@ class AdminUserBootstrapper
      */
     public static function ensureForEmail(string $email): ?User
     {
-        $normalizedEmail = Str::lower($email)->toString();
+        $normalizedEmail = Str::lower($email);
 
         foreach (self::configuredAdmins() as $admin) {
-            if (Str::lower($admin['email'])->toString() === $normalizedEmail) {
+            if (Str::lower($admin['email']) === $normalizedEmail) {
                 return self::ensureAdmin($admin);
             }
         }
@@ -90,7 +90,7 @@ class AdminUserBootstrapper
             $username = Str::of($email)->before('@')->replaceMatches('/[^A-Za-z0-9_]+/', '_')->lower()->trim('_')->toString();
         }
 
-        $admins[Str::lower($email)->toString()] = [
+        $admins[Str::lower($email)] = [
             'username' => $username,
             'name' => trim((string) $admin['name']) ?: Str::headline($username),
             'email' => $email,
