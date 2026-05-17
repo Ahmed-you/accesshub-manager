@@ -48,6 +48,13 @@ class AdminUserBootstrapper
             'password' => env('ADMIN_PASSWORD', 'password'),
         ]);
 
+        self::addAdmin($admins, [
+            'username' => env('SECOND_ADMIN_USERNAME', ''),
+            'name' => env('SECOND_ADMIN_NAME', ''),
+            'email' => env('SECOND_ADMIN_EMAIL', ''),
+            'password' => env('SECOND_ADMIN_PASSWORD', ''),
+        ]);
+
         foreach (explode(';', (string) env('ADMIN_USERS', '')) as $entry) {
             $entry = trim($entry);
 
