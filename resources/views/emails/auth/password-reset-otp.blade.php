@@ -10,8 +10,19 @@
         <div style="max-width:560px;margin:0 auto;border:1px solid #1f3346;border-radius:24px;overflow:hidden;background:#0d1724;box-shadow:0 24px 70px rgba(0,0,0,.35);">
             <div style="padding:28px 28px 20px;border-bottom:1px solid #1f3346;">
                 <div style="display:flex;align-items:center;gap:14px;">
-                    @if (file_exists(base_path('image.png')))
-                        <img src="{{ $message->embed(base_path('image.png')) }}" alt="AccessHub" width="64" height="64" style="display:block;width:64px;height:64px;border-radius:999px;border:1px solid #24445d;object-fit:cover;">
+                    @php
+                        $logoPath = base_path('image.png');
+                        $logoSrc = null;
+
+                        if (file_exists($logoPath)) {
+                            $logoSrc = isset($message)
+                                ? $message->embed($logoPath)
+                                : 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath));
+                        }
+                    @endphp
+
+                    @if ($logoSrc)
+                        <img src="{{ $logoSrc }}" alt="AccessHub" width="64" height="64" style="display:block;width:64px;height:64px;border-radius:999px;border:1px solid #24445d;object-fit:cover;">
                     @endif
                     <div>
                         <div style="font-size:22px;font-weight:700;letter-spacing:.2px;">

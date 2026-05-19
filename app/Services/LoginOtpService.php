@@ -2,17 +2,17 @@
 
 namespace App\Services;
 
-use App\Mail\AdminLoginOtpMail;
 use App\Models\LoginOtp;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class LoginOtpService
 {
     public const EXPIRES_IN_MINUTES = 10;
+
+    public function __construct(private AdminOtpMailer $mailer) {}
 
     public function issue(User $user, bool $remember, Request $request): LoginOtp
     {
@@ -37,7 +37,7 @@ class LoginOtpService
             'user_agent' => (string) $request->userAgent(),
         ]);
 
-        Mail::to($user->email)->send(new AdminLoginOtpMail($user, $code, self::EXPIRES_IN_MINUTES));
+        $this->mailer->sendLoginCode($user, $code, self::EXPIRES_IN_MINUTES);
 
         return $otp;
     }

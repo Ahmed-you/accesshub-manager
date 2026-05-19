@@ -28,6 +28,16 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'accesshub_mail' => [
+        'provider' => env('ACCESSHUB_MAIL_PROVIDER', 'laravel'),
+    ],
+
+    'brevo' => [
+        'key' => env('BREVO_API_KEY'),
+        'from_address' => env('BREVO_FROM_ADDRESS', env('MAIL_FROM_ADDRESS', 'hello@example.com')),
+        'from_name' => env('BREVO_FROM_NAME', env('MAIL_FROM_NAME', 'AccessHub Manager')),
+    ],
+
     'exchange_rates' => [
         'ca_bundle' => env('EXCHANGE_RATE_CA_BUNDLE'),
     ],

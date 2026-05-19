@@ -2,17 +2,17 @@
 
 namespace App\Services;
 
-use App\Mail\AdminPasswordResetOtpMail;
 use App\Models\PasswordResetOtp;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class PasswordResetOtpService
 {
     public const EXPIRES_IN_MINUTES = 10;
+
+    public function __construct(private AdminOtpMailer $mailer) {}
 
     public function issue(User $user, Request $request): PasswordResetOtp
     {
@@ -30,7 +30,7 @@ class PasswordResetOtpService
             'user_agent' => (string) $request->userAgent(),
         ]);
 
-        Mail::to($user->email)->send(new AdminPasswordResetOtpMail($user, $code, self::EXPIRES_IN_MINUTES));
+        $this->mailer->sendPasswordResetCode($user, $code, self::EXPIRES_IN_MINUTES);
 
         return $otp;
     }
