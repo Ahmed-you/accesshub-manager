@@ -20,6 +20,8 @@ return [
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
+    'login_otp_enabled' => env('LOGIN_OTP_ENABLED', true),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Guards

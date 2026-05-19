@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
     {
         $user = $request->authenticate();
 
-        if ($user->email) {
+        if (config('auth.login_otp_enabled') && $user->email) {
             LoginOtpController::setPendingLogin($request, $user, $request->boolean('remember'));
 
             try {
