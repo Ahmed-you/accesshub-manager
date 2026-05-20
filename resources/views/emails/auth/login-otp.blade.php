@@ -13,8 +13,9 @@
                     @php
                         $logoPath = base_path('image.png');
                         $logoSrc = null;
+                        $shouldEmbedLogo = $embedLogo ?? true;
 
-                        if (file_exists($logoPath)) {
+                        if ($shouldEmbedLogo && file_exists($logoPath)) {
                             $logoSrc = isset($message)
                                 ? $message->embed($logoPath)
                                 : 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath));

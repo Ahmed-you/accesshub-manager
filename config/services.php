@@ -38,6 +38,12 @@ return [
         'from_name' => env('BREVO_FROM_NAME', env('MAIL_FROM_NAME', 'AccessHub Manager')),
     ],
 
+    'google_apps_script_mail' => [
+        'url' => env('GOOGLE_APPS_SCRIPT_MAIL_URL'),
+        'secret' => env('GOOGLE_APPS_SCRIPT_MAIL_SECRET'),
+        'from_name' => env('GOOGLE_APPS_SCRIPT_MAIL_FROM_NAME', env('MAIL_FROM_NAME', 'AccessHub Manager')),
+    ],
+
     'exchange_rates' => [
         'ca_bundle' => env('EXCHANGE_RATE_CA_BUNDLE'),
     ],
