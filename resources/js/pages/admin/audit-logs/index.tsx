@@ -1,3 +1,4 @@
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -105,7 +106,63 @@ export default function AuditLogsIndex({ auditLogs, filters, events, auditableTy
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {auditLogs.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No audit logs found.')}
+                            </div>
+                        ) : (
+                            auditLogs.data.map((log) => (
+                                <MobileRecordCard
+                                    key={log.id}
+                                    title={formatDateTime(log.created_at)}
+                                    subtitle={log.ip_address ?? t('No IP')}
+                                    badges={<AuditEventBadge event={log.event} label={t(log.event_label)} />}
+                                    fields={[
+                                        {
+                                            label: t('Admin'),
+                                            value: (
+                                                <>
+                                                    <div>{log.user_name ?? t('System')}</div>
+                                                    <div className="text-muted-foreground">
+                                                        {log.user_username ? `@${log.user_username}` : t('No username')}
+                                                    </div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Record'),
+                                            value: `${t(log.auditable_label)} · ${t('Record ID')} #${log.auditable_id ?? '-'}`,
+                                        },
+                                        {
+                                            label: t('Changed fields'),
+                                            value:
+                                                log.changed_fields.length === 0 ? (
+                                                    t('No field details')
+                                                ) : (
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {log.changed_fields.slice(0, 8).map((field) => (
+                                                            <Badge key={field} variant="outline">
+                                                                {field}
+                                                            </Badge>
+                                                        ))}
+                                                        {log.changed_fields.length > 8 ? (
+                                                            <Badge variant="secondary">+{log.changed_fields.length - 8}</Badge>
+                                                        ) : null}
+                                                    </div>
+                                                ),
+                                        },
+                                        {
+                                            label: t('Details'),
+                                            value: <AuditDetails log={log} />,
+                                        },
+                                    ]}
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[980px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">
@@ -133,7 +190,9 @@ export default function AuditLogsIndex({ auditLogs, filters, events, auditableTy
                                             </td>
                                             <td className="px-3 py-4 align-top">
                                                 <div className="font-medium">{log.user_name ?? t('System')}</div>
-                                                <div className="text-muted-foreground mt-1">{log.user_username ? `@${log.user_username}` : t('No username')}</div>
+                                                <div className="text-muted-foreground mt-1">
+                                                    {log.user_username ? `@${log.user_username}` : t('No username')}
+                                                </div>
                                             </td>
                                             <td className="px-3 py-4 align-top">
                                                 <AuditEventBadge event={log.event} label={t(log.event_label)} />
@@ -155,7 +214,9 @@ export default function AuditLogsIndex({ auditLogs, filters, events, auditableTy
                                                             </Badge>
                                                         ))
                                                     )}
-                                                    {log.changed_fields.length > 8 ? <Badge variant="secondary">+{log.changed_fields.length - 8}</Badge> : null}
+                                                    {log.changed_fields.length > 8 ? (
+                                                        <Badge variant="secondary">+{log.changed_fields.length - 8}</Badge>
+                                                    ) : null}
                                                 </div>
                                             </td>
                                             <td className="px-3 py-4 align-top">

@@ -1,4 +1,5 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Button } from '@/components/ui/button';
@@ -84,7 +85,63 @@ export default function PaymentsIndex({ payments, filters, customers }: Payments
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {payments.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No payments yet. Add the first payment to start tracking what customers actually paid.')}
+                            </div>
+                        ) : (
+                            payments.data.map((payment) => (
+                                <MobileRecordCard
+                                    key={payment.id}
+                                    title={payment.customer_name}
+                                    subtitle={payment.reference ?? undefined}
+                                    fields={[
+                                        {
+                                            label: t('Subscription'),
+                                            value: (
+                                                <>
+                                                    <div>{payment.subscription_label}</div>
+                                                    <div className="text-muted-foreground">{payment.service_name}</div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Payment amount'),
+                                            value: `${payment.amount_original} ${payment.currency}`,
+                                        },
+                                        {
+                                            label: t('Payment in USD'),
+                                            value: `${payment.amount_usd} USD · ${t('Rate')} ${payment.exchange_rate_to_usd}`,
+                                        },
+                                        {
+                                            label: t('Paid at'),
+                                            value: payment.paid_at ?? '-',
+                                        },
+                                        {
+                                            label: t('Payment method'),
+                                            value: payment.method_label ? t(payment.method_label) : t('None'),
+                                        },
+                                    ]}
+                                    actions={
+                                        <>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('customers.show', payment.customer_id)}>{t('Customer')}</Link>
+                                            </Button>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('payments.edit', payment.id)}>{t('Edit')}</Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => destroyPayment(payment)}>
+                                                {t('Delete')}
+                                            </Button>
+                                        </>
+                                    }
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[1020px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">

@@ -1,4 +1,5 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -86,7 +87,95 @@ export default function SubscriptionsIndex({ subscriptions, filters, customers }
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {subscriptions.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No subscriptions yet. Add the first subscription to connect customers, services, and suppliers.')}
+                            </div>
+                        ) : (
+                            subscriptions.data.map((subscription) => (
+                                <MobileRecordCard
+                                    key={subscription.id}
+                                    title={subscription.internal_order_number}
+                                    subtitle={
+                                        <>
+                                            <div>{subscription.customer_name}</div>
+                                            <div>{subscription.plan_name}</div>
+                                            <div>{subscription.account_identifier}</div>
+                                        </>
+                                    }
+                                    imageUrl={subscription.service_image_url}
+                                    imageAlt={subscription.service_name ?? 'Service'}
+                                    badges={
+                                        <>
+                                            <Badge variant={countdownVariant(subscription.countdown_status)}>
+                                                {localizeCountdownLabel(locale, subscription.countdown_label)}
+                                            </Badge>
+                                            <Badge variant={paymentVariant(subscription.payment_status)}>
+                                                {t(subscription.payment_status_label)}
+                                            </Badge>
+                                            <Badge variant="outline">{t(subscription.status)}</Badge>
+                                        </>
+                                    }
+                                    fields={[
+                                        {
+                                            label: t('Service'),
+                                            value: (
+                                                <>
+                                                    <div>{subscription.service_name}</div>
+                                                    <div className="text-muted-foreground">{subscription.supplier_name}</div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Duration'),
+                                            value: (
+                                                <>
+                                                    <div>{localizeDurationLabel(locale, subscription.duration_label)}</div>
+                                                    <div className="text-muted-foreground">
+                                                        {subscription.start_date} - {subscription.end_date}
+                                                    </div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Payment'),
+                                            value: `${subscription.sale_amount_original} ${subscription.sale_currency} · ${subscription.sale_amount_usd} USD`,
+                                        },
+                                        {
+                                            label: t('Profit'),
+                                            value: `${subscription.profit_usd} USD · ${subscription.paid_total_usd} USD ${t('paid')}`,
+                                        },
+                                    ]}
+                                    actions={
+                                        <>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link
+                                                    href={route('payments.create', {
+                                                        customer: subscription.customer_id,
+                                                        subscription: subscription.id,
+                                                    })}
+                                                >
+                                                    {t('Payment')}
+                                                </Link>
+                                            </Button>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('customers.show', subscription.customer_id)}>{t('Customer')}</Link>
+                                            </Button>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('subscriptions.edit', subscription.id)}>{t('Edit')}</Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => destroySubscription(subscription)}>
+                                                {t('Delete')}
+                                            </Button>
+                                        </>
+                                    }
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[1100px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">

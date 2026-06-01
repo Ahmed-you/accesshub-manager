@@ -1,4 +1,5 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +72,55 @@ export default function SuppliersIndex({ suppliers, filters }: SuppliersIndexPro
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {suppliers.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No suppliers yet. Add one before creating subscription orders.')}
+                            </div>
+                        ) : (
+                            suppliers.data.map((supplier) => (
+                                <MobileRecordCard
+                                    key={supplier.id}
+                                    title={supplier.name}
+                                    subtitle={supplier.notes ?? undefined}
+                                    badges={
+                                        <Badge variant={supplier.active ? 'default' : 'secondary'}>
+                                            {supplier.active ? t('Active') : t('Inactive')}
+                                        </Badge>
+                                    }
+                                    fields={[
+                                        {
+                                            label: t('Contact'),
+                                            value: (
+                                                <>
+                                                    <div>{supplier.contact_name ?? t('No contact')}</div>
+                                                    <div className="text-muted-foreground">
+                                                        {supplier.email ?? supplier.phone ?? t('No direct contact details')}
+                                                    </div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Subscriptions'),
+                                            value: supplier.subscriptions_count ?? 0,
+                                        },
+                                    ]}
+                                    actions={
+                                        <>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('suppliers.edit', supplier.id)}>{t('Edit')}</Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => destroySupplier(supplier)}>
+                                                {t('Delete')}
+                                            </Button>
+                                        </>
+                                    }
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[760px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">

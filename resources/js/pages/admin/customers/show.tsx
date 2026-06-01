@@ -1,12 +1,13 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLocale } from '@/hooks/use-locale';
-import { localizeCountdownLabel, localizeDurationLabel } from '@/lib/translations';
 import AppLayout from '@/layouts/app-layout';
+import { localizeCountdownLabel, localizeDurationLabel } from '@/lib/translations';
 import { type BreadcrumbItem, type Customer, type PaginatedData, type Subscription } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
@@ -103,7 +104,88 @@ export default function CustomerShow({ customer, subscriptions, filters }: Custo
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {subscriptions.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No subscriptions are linked to this customer yet.')}
+                            </div>
+                        ) : (
+                            subscriptions.data.map((subscription) => (
+                                <MobileRecordCard
+                                    key={subscription.id}
+                                    title={subscription.internal_order_number}
+                                    subtitle={
+                                        <>
+                                            <div>{subscription.plan_name}</div>
+                                            <div>{subscription.account_identifier}</div>
+                                        </>
+                                    }
+                                    imageUrl={subscription.service_image_url}
+                                    imageAlt={subscription.service_name ?? 'Service'}
+                                    badges={
+                                        <>
+                                            <Badge variant={countdownVariant(subscription.countdown_status)}>
+                                                {localizeCountdownLabel(locale, subscription.countdown_label)}
+                                            </Badge>
+                                            <Badge variant={paymentVariant(subscription.payment_status)}>
+                                                {t(subscription.payment_status_label)}
+                                            </Badge>
+                                            <Badge variant="outline">{t(subscription.status)}</Badge>
+                                        </>
+                                    }
+                                    fields={[
+                                        {
+                                            label: t('Service'),
+                                            value: (
+                                                <>
+                                                    <div>{subscription.service_name}</div>
+                                                    <div className="text-muted-foreground">{subscription.supplier_name}</div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Period'),
+                                            value: (
+                                                <>
+                                                    <div>{localizeDurationLabel(locale, subscription.duration_label)}</div>
+                                                    <div className="text-muted-foreground">
+                                                        {subscription.start_date} - {subscription.end_date}
+                                                    </div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Payment'),
+                                            value: `${subscription.sale_amount_original} ${subscription.sale_currency} · ${subscription.sale_amount_usd} USD`,
+                                        },
+                                        {
+                                            label: t('Profit'),
+                                            value: `${subscription.profit_usd} USD · ${subscription.paid_total_usd} USD ${t('paid')}`,
+                                        },
+                                    ]}
+                                    actions={
+                                        <>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('payments.create', { customer: customer.id, subscription: subscription.id })}>
+                                                    {t('Payment')}
+                                                </Link>
+                                            </Button>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('subscriptions.edit', { subscription: subscription.id, return_to_customer: 1 })}>
+                                                    {t('Edit')}
+                                                </Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => destroySubscription(subscription)}>
+                                                {t('Delete')}
+                                            </Button>
+                                        </>
+                                    }
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[1000px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">
@@ -164,7 +246,9 @@ export default function CustomerShow({ customer, subscriptions, filters }: Custo
                                                 </div>
                                             </td>
                                             <td className="px-3 py-4 align-top">
-                                                <div>{subscription.sale_amount_original} {subscription.sale_currency}</div>
+                                                <div>
+                                                    {subscription.sale_amount_original} {subscription.sale_currency}
+                                                </div>
                                                 <div className="text-muted-foreground mt-1">{subscription.sale_amount_usd} USD</div>
                                                 <Badge className="mt-2" variant={paymentVariant(subscription.payment_status)}>
                                                     {t(subscription.payment_status_label)}
@@ -172,17 +256,26 @@ export default function CustomerShow({ customer, subscriptions, filters }: Custo
                                             </td>
                                             <td className="px-3 py-4 align-top">
                                                 <div className="font-medium">{subscription.profit_usd} USD</div>
-                                                <div className="text-muted-foreground mt-1">{subscription.paid_total_usd} USD {t('paid')}</div>
+                                                <div className="text-muted-foreground mt-1">
+                                                    {subscription.paid_total_usd} USD {t('paid')}
+                                                </div>
                                             </td>
                                             <td className="px-3 py-4 text-right align-top">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="outline" size="sm" asChild>
-                                                        <Link href={route('payments.create', { customer: customer.id, subscription: subscription.id })}>
+                                                        <Link
+                                                            href={route('payments.create', { customer: customer.id, subscription: subscription.id })}
+                                                        >
                                                             {t('Payment')}
                                                         </Link>
                                                     </Button>
                                                     <Button variant="outline" size="sm" asChild>
-                                                        <Link href={route('subscriptions.edit', { subscription: subscription.id, return_to_customer: 1 })}>
+                                                        <Link
+                                                            href={route('subscriptions.edit', {
+                                                                subscription: subscription.id,
+                                                                return_to_customer: 1,
+                                                            })}
+                                                        >
                                                             {t('Edit')}
                                                         </Link>
                                                     </Button>

@@ -1,12 +1,13 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLocale } from '@/hooks/use-locale';
-import { localizeDurationLabel } from '@/lib/translations';
 import AppLayout from '@/layouts/app-layout';
+import { localizeDurationLabel } from '@/lib/translations';
 import { type BreadcrumbItem, type PaginatedData, type ResourceFilters, type Service } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
@@ -72,7 +73,59 @@ export default function ServicesIndex({ services, filters }: ServicesIndexProps)
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {services.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No services yet. Add the first service so subscription orders have a clean catalog.')}
+                            </div>
+                        ) : (
+                            services.data.map((service) => (
+                                <MobileRecordCard
+                                    key={service.id}
+                                    title={service.name}
+                                    subtitle={service.description ?? undefined}
+                                    imageUrl={service.image_url}
+                                    imageAlt={service.name}
+                                    badges={
+                                        <>
+                                            <Badge variant={service.active ? 'default' : 'secondary'}>
+                                                {service.active ? t('Active') : t('Inactive')}
+                                            </Badge>
+                                            <Badge variant="outline">{service.category ?? t('Uncategorized')}</Badge>
+                                        </>
+                                    }
+                                    fields={[
+                                        {
+                                            label: t('Default duration'),
+                                            value:
+                                                service.default_duration_value && service.default_duration_unit
+                                                    ? localizeDurationLabel(
+                                                          locale,
+                                                          `${service.default_duration_value} ${service.default_duration_unit}${service.default_duration_value === 1 ? '' : 's'}`,
+                                                      )
+                                                    : t('Not set'),
+                                        },
+                                        {
+                                            label: t('Subscriptions'),
+                                            value: service.subscriptions_count ?? 0,
+                                        },
+                                    ]}
+                                    actions={
+                                        <>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('services.edit', service.id)}>{t('Edit')}</Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => destroyService(service)}>
+                                                {t('Delete')}
+                                            </Button>
+                                        </>
+                                    }
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[760px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">

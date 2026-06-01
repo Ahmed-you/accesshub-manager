@@ -18,7 +18,7 @@ export default function PageHeader({ title, description, actions, className }: P
                 <p className="text-muted-foreground max-w-2xl text-sm">{t(description)}</p>
             </div>
 
-            {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+            {actions ? <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end">{actions}</div> : null}
         </div>
     );
 }

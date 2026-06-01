@@ -1,4 +1,5 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +72,52 @@ export default function CustomersIndex({ customers, filters }: CustomersIndexPro
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {customers.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No customers yet. Add your first customer to get started.')}
+                            </div>
+                        ) : (
+                            customers.data.map((customer) => (
+                                <MobileRecordCard
+                                    key={customer.id}
+                                    title={customer.name}
+                                    subtitle={customer.notes ?? undefined}
+                                    badges={<Badge variant="outline">{customer.preferred_currency}</Badge>}
+                                    fields={[
+                                        {
+                                            label: t('Contact'),
+                                            value: (
+                                                <>
+                                                    <div>{customer.email ?? t('No email')}</div>
+                                                    <div className="text-muted-foreground">{customer.phone ?? t('No phone')}</div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Activity'),
+                                            value: `${customer.subscriptions_count ?? 0} ${t('subscriptions')} · ${customer.payments_count ?? 0} ${t('payments')}`,
+                                        },
+                                    ]}
+                                    actions={
+                                        <>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('customers.show', customer.id)}>{t('View')}</Link>
+                                            </Button>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('customers.edit', customer.id)}>{t('Edit')}</Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => destroyCustomer(customer)}>
+                                                {t('Delete')}
+                                            </Button>
+                                        </>
+                                    }
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[760px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">

@@ -1,4 +1,5 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -128,7 +129,64 @@ export default function ExchangeRateSnapshotsIndex({ snapshots, filters, currenc
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {snapshots.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No exchange-rate snapshots found.')}
+                            </div>
+                        ) : (
+                            snapshots.data.map((snapshot) => (
+                                <MobileRecordCard
+                                    key={snapshot.id}
+                                    title={formatDateTime(snapshot.captured_at)}
+                                    subtitle={`#${snapshot.id}`}
+                                    badges={
+                                        <>
+                                            <Badge variant="outline">{snapshot.from_currency}</Badge>
+                                            <Badge variant="outline">{snapshot.to_currency}</Badge>
+                                        </>
+                                    }
+                                    fields={[
+                                        {
+                                            label: t('Rate'),
+                                            value: (
+                                                <>
+                                                    <div className="font-mono font-medium">{snapshot.rate}</div>
+                                                    <div className="text-muted-foreground">
+                                                        {t('1 {from} = {rate} {to}', {
+                                                            from: snapshot.from_currency,
+                                                            rate: snapshot.rate,
+                                                            to: snapshot.to_currency,
+                                                        })}
+                                                    </div>
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Source'),
+                                            value: snapshot.source_url ? (
+                                                <Link href={snapshot.source_url} className="font-medium hover:underline">
+                                                    {t(snapshot.source_label)}
+                                                </Link>
+                                            ) : (
+                                                t(snapshot.source_label)
+                                            ),
+                                        },
+                                        {
+                                            label: t('Provider'),
+                                            value: snapshot.provider ?? t('Not set'),
+                                        },
+                                        {
+                                            label: t('Notes'),
+                                            value: snapshot.notes ?? t('No notes'),
+                                        },
+                                    ]}
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[980px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">

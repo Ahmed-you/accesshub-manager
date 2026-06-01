@@ -1,4 +1,5 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import Pagination from '@/components/admin/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +72,65 @@ export default function CapitalBatchesIndex({ capitalBatches, filters }: Capital
                         </div>
                     </form>
 
-                    <div className="overflow-x-auto">
+                    <div className="grid gap-3 lg:hidden">
+                        {capitalBatches.data.length === 0 ? (
+                            <div className="text-muted-foreground border-sidebar-border/70 rounded-lg border p-6 text-center text-sm">
+                                {t('No capital batches yet. Add a funding record before deeper financial tracking.')}
+                            </div>
+                        ) : (
+                            capitalBatches.data.map((capitalBatch) => (
+                                <MobileRecordCard
+                                    key={capitalBatch.id}
+                                    title={t('Batch #{id}', { id: capitalBatch.id })}
+                                    subtitle={capitalBatch.notes ?? undefined}
+                                    badges={<Badge variant="outline">{capitalBatch.reference_currency}</Badge>}
+                                    fields={[
+                                        {
+                                            label: t('USD amount'),
+                                            value: `USD ${capitalBatch.usd_amount}`,
+                                        },
+                                        {
+                                            label: t('Funding date'),
+                                            value: capitalBatch.funding_date,
+                                        },
+                                        {
+                                            label: t('Reference'),
+                                            value: (
+                                                <>
+                                                    <div>
+                                                        {capitalBatch.reference_exchange_rate_to_usd
+                                                            ? t('Rate {rate}', { rate: capitalBatch.reference_exchange_rate_to_usd })
+                                                            : t('Not set')}
+                                                    </div>
+                                                    {capitalBatch.reference_original_amount ? (
+                                                        <div className="text-muted-foreground">
+                                                            {t('Source amount {amount}', { amount: capitalBatch.reference_original_amount })}
+                                                        </div>
+                                                    ) : null}
+                                                </>
+                                            ),
+                                        },
+                                        {
+                                            label: t('Remaining'),
+                                            value: `USD ${capitalBatch.remaining_usd ?? capitalBatch.usd_amount}`,
+                                        },
+                                    ]}
+                                    actions={
+                                        <>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={route('capital-batches.edit', capitalBatch.id)}>{t('Edit')}</Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => destroyCapitalBatch(capitalBatch)}>
+                                                {t('Delete')}
+                                            </Button>
+                                        </>
+                                    }
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="hidden overflow-x-auto lg:block">
                         <table className="w-full min-w-[860px] text-left text-sm">
                             <thead className="text-muted-foreground">
                                 <tr className="border-sidebar-border/70 border-b">

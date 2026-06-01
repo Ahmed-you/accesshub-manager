@@ -1,4 +1,5 @@
 import FlashMessage from '@/components/admin/flash-message';
+import MobileRecordCard from '@/components/admin/mobile-record-card';
 import PageHeader from '@/components/admin/page-header';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -232,7 +233,9 @@ export default function TelegramAutomationIndex({ summary, targets, templates, c
         };
 
         if (editingCampaignId) {
-            routineForm.transform((data) => ({ ...data, _method: 'put' })).post(route('automation.telegram.campaigns.update', editingCampaignId), options);
+            routineForm
+                .transform((data) => ({ ...data, _method: 'put' }))
+                .post(route('automation.telegram.campaigns.update', editingCampaignId), options);
             return;
         }
 
@@ -601,7 +604,7 @@ export default function TelegramAutomationIndex({ summary, targets, templates, c
                             <Button type="submit" variant="outline" className="self-end" disabled={sendQueuedForm.processing}>
                                 {t('Send due now manually')}
                             </Button>
-                            <p className="text-muted-foreground sm:col-span-2 text-sm">
+                            <p className="text-muted-foreground text-sm sm:col-span-2">
                                 {t('This button sends only queued messages that are already due. The background scheduler stays paused.')}
                             </p>
                         </form>
@@ -756,7 +759,9 @@ export default function TelegramAutomationIndex({ summary, targets, templates, c
                                 <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
                                     <div className="min-w-0">
                                         <div className="font-medium">{template.name}</div>
-                                        <div className="text-muted-foreground mt-1 text-sm break-all">{template.source_message_ref || template.body}</div>
+                                        <div className="text-muted-foreground mt-1 text-sm break-all">
+                                            {template.source_message_ref || template.body}
+                                        </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 md:flex">
                                         <Button type="button" variant="outline" onClick={() => editTemplate(template)}>
@@ -820,64 +825,117 @@ export default function TelegramAutomationIndex({ summary, targets, templates, c
 
                 <AutomationList title={t('Recent Telegram sends')} emptyText={t('No Telegram sends yet.')}>
                     {deliveries.data.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <table className="w-full min-w-[980px] table-fixed text-left text-sm">
-                                <thead className="text-muted-foreground">
-                                    <tr className="border-sidebar-border/70 border-b">
-                                        <th className="w-[13%] px-4 py-3 font-medium">{t('Status')}</th>
-                                        <th className="w-[20%] px-4 py-3 font-medium">{t('Destination')}</th>
-                                        <th className="w-[20%] px-4 py-3 font-medium">{t('Source post')}</th>
-                                        <th className="w-[17%] px-4 py-3 font-medium">{t('Scheduled for')}</th>
-                                        <th className="w-[22%] px-4 py-3 font-medium">{t('Result')}</th>
-                                        <th className="w-[8%] px-4 py-3 font-medium">{t('Actions')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {deliveries.data.map((delivery) => (
-                                        <tr key={delivery.id} className="border-sidebar-border/70 border-b align-top last:border-b-0">
-                                            <td className="px-4 py-3">
-                                                <StatusBadge status={delivery.status} />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="font-medium">{delivery.target_name ?? delivery.target_type}</div>
-                                                <div className="text-muted-foreground mt-1 break-all">{delivery.target_identifier}</div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div>{delivery.template_name ?? '-'}</div>
-                                                <div className="text-muted-foreground mt-1">{t(delivery.purpose)}</div>
-                                            </td>
-                                            <td className="px-4 py-3">{delivery.scheduled_for ?? '-'}</td>
-                                            <td className="px-4 py-3">
-                                                {delivery.error_message ? (
-                                                    <div className="text-destructive break-words">{delivery.error_message}</div>
+                        <>
+                            <div className="grid gap-3 p-4 lg:hidden">
+                                {deliveries.data.map((delivery) => (
+                                    <MobileRecordCard
+                                        key={delivery.id}
+                                        title={delivery.target_name ?? delivery.target_type}
+                                        subtitle={delivery.target_identifier}
+                                        badges={<StatusBadge status={delivery.status} />}
+                                        fields={[
+                                            {
+                                                label: t('Source post'),
+                                                value: (
+                                                    <>
+                                                        <div>{delivery.template_name ?? '-'}</div>
+                                                        <div className="text-muted-foreground">{t(delivery.purpose)}</div>
+                                                    </>
+                                                ),
+                                            },
+                                            {
+                                                label: t('Scheduled for'),
+                                                value: delivery.scheduled_for ?? '-',
+                                            },
+                                            {
+                                                label: t('Result'),
+                                                value: delivery.error_message ? (
+                                                    <span className="text-destructive">{delivery.error_message}</span>
                                                 ) : delivery.sent_at ? (
-                                                    <div>
-                                                        {t('Sent at')} {delivery.sent_at}
-                                                    </div>
+                                                    `${t('Sent at')} ${delivery.sent_at}`
                                                 ) : (
-                                                    <div className="text-muted-foreground">{t('Waiting')}</div>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() =>
-                                                        openDeleteDialog(
-                                                            route('automation.telegram.deliveries.destroy', delivery.id),
-                                                            t('Delete send history'),
-                                                            t('This queued or historical send row will be removed.'),
-                                                        )
-                                                    }
-                                                >
-                                                    {t('Delete')}
-                                                </Button>
-                                            </td>
+                                                    <span className="text-muted-foreground">{t('Waiting')}</span>
+                                                ),
+                                            },
+                                        ]}
+                                        actions={
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    openDeleteDialog(
+                                                        route('automation.telegram.deliveries.destroy', delivery.id),
+                                                        t('Delete send history'),
+                                                        t('This queued or historical send row will be removed.'),
+                                                    )
+                                                }
+                                            >
+                                                {t('Delete')}
+                                            </Button>
+                                        }
+                                    />
+                                ))}
+                            </div>
+
+                            <div className="hidden overflow-x-auto lg:block">
+                                <table className="w-full min-w-[980px] table-fixed text-left text-sm">
+                                    <thead className="text-muted-foreground">
+                                        <tr className="border-sidebar-border/70 border-b">
+                                            <th className="w-[13%] px-4 py-3 font-medium">{t('Status')}</th>
+                                            <th className="w-[20%] px-4 py-3 font-medium">{t('Destination')}</th>
+                                            <th className="w-[20%] px-4 py-3 font-medium">{t('Source post')}</th>
+                                            <th className="w-[17%] px-4 py-3 font-medium">{t('Scheduled for')}</th>
+                                            <th className="w-[22%] px-4 py-3 font-medium">{t('Result')}</th>
+                                            <th className="w-[8%] px-4 py-3 font-medium">{t('Actions')}</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {deliveries.data.map((delivery) => (
+                                            <tr key={delivery.id} className="border-sidebar-border/70 border-b align-top last:border-b-0">
+                                                <td className="px-4 py-3">
+                                                    <StatusBadge status={delivery.status} />
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="font-medium">{delivery.target_name ?? delivery.target_type}</div>
+                                                    <div className="text-muted-foreground mt-1 break-all">{delivery.target_identifier}</div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div>{delivery.template_name ?? '-'}</div>
+                                                    <div className="text-muted-foreground mt-1">{t(delivery.purpose)}</div>
+                                                </td>
+                                                <td className="px-4 py-3">{delivery.scheduled_for ?? '-'}</td>
+                                                <td className="px-4 py-3">
+                                                    {delivery.error_message ? (
+                                                        <div className="text-destructive break-words">{delivery.error_message}</div>
+                                                    ) : delivery.sent_at ? (
+                                                        <div>
+                                                            {t('Sent at')} {delivery.sent_at}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-muted-foreground">{t('Waiting')}</div>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            openDeleteDialog(
+                                                                route('automation.telegram.deliveries.destroy', delivery.id),
+                                                                t('Delete send history'),
+                                                                t('This queued or historical send row will be removed.'),
+                                                            )
+                                                        }
+                                                    >
+                                                        {t('Delete')}
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
                     ) : null}
                     {deliveries.links.length > 3 ? (
                         <div className="flex flex-wrap gap-2 px-4 py-3">
@@ -1208,7 +1266,7 @@ function TimeChipEditor({
 
     return (
         <div className={compact ? 'grid gap-2' : 'admin-subsurface rounded-md border p-3'}>
-            <div className={compact ? 'flex flex-nowrap gap-2 overflow-x-auto rounded-md border border-input bg-card p-2' : 'flex flex-wrap gap-2'}>
+            <div className={compact ? 'border-input bg-card flex flex-nowrap gap-2 overflow-x-auto rounded-md border p-2' : 'flex flex-wrap gap-2'}>
                 {times.length > 0 ? (
                     times.map((time, index) => (
                         <span
