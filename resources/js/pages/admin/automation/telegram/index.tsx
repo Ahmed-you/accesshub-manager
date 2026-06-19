@@ -602,10 +602,12 @@ export default function TelegramAutomationIndex({ summary, targets, templates, c
                                 />
                             </Field>
                             <Button type="submit" variant="outline" className="self-end" disabled={sendQueuedForm.processing}>
-                                {t('Send due now manually')}
+                                {t('Check routines and send due now')}
                             </Button>
                             <p className="text-muted-foreground text-sm sm:col-span-2">
-                                {t('This button sends only queued messages that are already due. The background scheduler stays paused.')}
+                                {t(
+                                    'This checks active daily routines, queues today’s missing sends, then sends only Telegram messages that are already due.',
+                                )}
                             </p>
                         </form>
                     </StepSection>

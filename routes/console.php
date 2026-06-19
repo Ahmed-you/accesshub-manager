@@ -159,8 +159,8 @@ Schedule::command('reminders:sync')
     ->dailyAt('07:00')
     ->withoutOverlapping();
 
-if (env('TELEGRAM_MARKETING_AUTOSEND', false)) {
-    $marketingLimit = max(1, min(5, (int) env('TELEGRAM_MARKETING_SEND_LIMIT', 1)));
+if ((bool) config('services.telegram.marketing_autosend')) {
+    $marketingLimit = max(1, min(5, (int) config('services.telegram.marketing_send_limit', 1)));
 
     Schedule::command('telegram:queue-daily-campaigns')
         ->everyMinute()

@@ -669,8 +669,11 @@ const arabicTranslations: Record<string, string> = {
     'Queue campaign': 'إضافة الحملة للانتظار',
     'Due sends limit': 'حد الرسائل المستحقة',
     'Send due now manually': 'إرسال المستحق الآن يدوياً',
+    'Check routines and send due now': 'فحص الروتين وإرسال المستحق الآن',
     'This button sends only queued messages that are already due. The background scheduler stays paused.':
         'هذا الزر يرسل فقط الرسائل المنتظرة التي حان وقتها. المجدول الخلفي يبقى كما هو.',
+    'This checks active daily routines, queues today’s missing sends, then sends only Telegram messages that are already due.':
+        'يفحص هذا الزر الروتين اليومي النشط، ويضيف رسائل اليوم الناقصة إلى الانتظار، ثم يرسل فقط رسائل تيليجرام التي حان وقتها.',
     'Daily routine': 'روتين يومي',
     'Save a recurring daily campaign. The scheduler queues future sends for the saved times every day.':
         'احفظ حملة يومية متكررة. المجدول يضيف رسائل الأوقات المحفوظة كل يوم.',

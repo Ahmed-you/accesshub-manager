@@ -40,8 +40,8 @@ class TelegramAutomationController extends Controller
                     ->where('status', 'queued')
                     ->where('scheduled_for', '<=', now())
                     ->count(),
-                'marketing_autosend_enabled' => env('TELEGRAM_MARKETING_AUTOSEND', false),
-                'marketing_send_limit' => (string) max(1, min(5, (int) env('TELEGRAM_MARKETING_SEND_LIMIT', 1))),
+                'marketing_autosend_enabled' => (bool) config('services.telegram.marketing_autosend'),
+                'marketing_send_limit' => (string) max(1, min(5, (int) config('services.telegram.marketing_send_limit', 1))),
             ],
             'targets' => TelegramTarget::query()
                 ->latest()
@@ -385,10 +385,19 @@ class TelegramAutomationController extends Controller
         ]);
 
         $purpose = $validated['purpose'] === 'all' ? null : $validated['purpose'];
+        $queuedFromRoutines = null;
+
+        if ($purpose === 'marketing') {
+            $queuedFromRoutines = $this->queueDailyCampaigns();
+        }
 
         $stats = $sender->sendQueued((int) $validated['limit'], $purpose);
 
         $message = "Manual Telegram sender processed {$stats['processed']} message(s): {$stats['sent']} sent, {$stats['failed']} failed.";
+
+        if ($queuedFromRoutines) {
+            $message = "Checked {$queuedFromRoutines['checked']} daily routine(s), queued {$queuedFromRoutines['queued']} new send(s). {$message}";
+        }
 
         return redirect()
             ->route('automation.telegram.index')
@@ -397,7 +406,7 @@ class TelegramAutomationController extends Controller
 
     public function schedulerTick(TelegramDeliverySender $sender): JsonResponse
     {
-        if (! env('TELEGRAM_MARKETING_AUTOSEND', false)) {
+        if (! (bool) config('services.telegram.marketing_autosend')) {
             return response()->json([
                 'ok' => true,
                 'paused' => true,
@@ -407,12 +416,15 @@ class TelegramAutomationController extends Controller
             ]);
         }
 
-        $limit = max(1, min(5, (int) env('TELEGRAM_MARKETING_SEND_LIMIT', 1)));
+        $limit = max(1, min(5, (int) config('services.telegram.marketing_send_limit', 1)));
+        $queuedFromRoutines = $this->queueDailyCampaigns();
         $stats = $sender->sendQueued($limit, 'marketing');
 
         return response()->json([
             'ok' => true,
             'paused' => false,
+            'daily_routines_checked' => $queuedFromRoutines['checked'],
+            'daily_routines_queued' => $queuedFromRoutines['queued'],
             ...$stats,
         ]);
     }

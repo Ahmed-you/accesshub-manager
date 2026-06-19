@@ -42,6 +42,12 @@ return [
         'url' => env('GOOGLE_APPS_SCRIPT_MAIL_URL'),
         'secret' => env('GOOGLE_APPS_SCRIPT_MAIL_SECRET'),
         'from_name' => env('GOOGLE_APPS_SCRIPT_MAIL_FROM_NAME', env('MAIL_FROM_NAME', 'AccessHub Manager')),
+        'verify_ssl' => env('GOOGLE_APPS_SCRIPT_MAIL_VERIFY_SSL', true),
+    ],
+
+    'telegram' => [
+        'marketing_autosend' => env('TELEGRAM_MARKETING_AUTOSEND', false),
+        'marketing_send_limit' => env('TELEGRAM_MARKETING_SEND_LIMIT', 1),
     ],
 
     'exchange_rates' => [

@@ -112,7 +112,13 @@ class AdminOtpMailer
             throw new RuntimeException('The admin account does not have an email address.');
         }
 
-        $response = Http::timeout(20)->post($url, [
+        $request = Http::timeout(20);
+
+        if (! (bool) config('services.google_apps_script_mail.verify_ssl')) {
+            $request = $request->withoutVerifying();
+        }
+
+        $response = $request->post($url, [
             'secret' => $secret,
             'to' => $user->email,
             'toName' => $user->name ?: $user->email,
